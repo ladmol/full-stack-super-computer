@@ -43,7 +43,7 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    items: list["Job"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -57,23 +57,23 @@ class UsersPublic(SQLModel):
 
 
 # Shared properties
-class ItemBase(SQLModel):
+class JobBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
 
 
 # Properties to receive on item creation
-class ItemCreate(ItemBase):
+class JobCreate(JobBase):
     pass
 
 
 # Properties to receive on item update
-class ItemUpdate(ItemBase):
+class JobUpdate(JobBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
 
 
 # Database model, database table inferred from class name
-class Item(ItemBase, table=True):
+class Job(JobBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     title: str = Field(max_length=255)
     owner_id: uuid.UUID = Field(
@@ -83,13 +83,13 @@ class Item(ItemBase, table=True):
 
 
 # Properties to return via API, id is always required
-class ItemPublic(ItemBase):
+class JobPublic(JobBase):
     id: uuid.UUID
     owner_id: uuid.UUID
 
 
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
+class JobsPublic(SQLModel):
+    data: list[JobPublic]
     count: int
 
 

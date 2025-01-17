@@ -5,12 +5,12 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
+from app.models import Job, JobCreate, JobPublic, JobsPublic, JobUpdate, Message
 
 router = APIRouter()
 
 
-@router.get("/", response_model=ItemsPublic)
+@router.get("/", response_model=JobsPublic)
 def read_items(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
@@ -19,34 +19,34 @@ def read_items(
     """
 
     if current_user.is_superuser:
-        count_statement = select(func.count()).select_from(Item)
+        count_statement = select(func.count()).select_from(Job)
         count = session.exec(count_statement).one()
-        statement = select(Item).offset(skip).limit(limit)
+        statement = select(Job).offset(skip).limit(limit)
         items = session.exec(statement).all()
     else:
         count_statement = (
             select(func.count())
-            .select_from(Item)
-            .where(Item.owner_id == current_user.id)
+            .select_from(Job)
+            .where(Job.owner_id == current_user.id)
         )
         count = session.exec(count_statement).one()
         statement = (
-            select(Item)
-            .where(Item.owner_id == current_user.id)
+            select(Job)
+            .where(Job.owner_id == current_user.id)
             .offset(skip)
             .limit(limit)
         )
         items = session.exec(statement).all()
 
-    return ItemsPublic(data=items, count=count)
+    return JobsPublic(data=items, count=count)
 
 
-@router.get("/{id}", response_model=ItemPublic)
+@router.get("/{id}", response_model=JobPublic)
 def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
     """
     Get item by ID.
     """
-    item = session.get(Item, id)
+    item = session.get(Job, id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     if not current_user.is_superuser and (item.owner_id != current_user.id):
@@ -54,32 +54,32 @@ def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> 
     return item
 
 
-@router.post("/", response_model=ItemPublic)
+@router.post("/", response_model=JobPublic)
 def create_item(
-    *, session: SessionDep, current_user: CurrentUser, item_in: ItemCreate
+    *, session: SessionDep, current_user: CurrentUser, item_in: JobCreate
 ) -> Any:
     """
     Create new item.
     """
-    item = Item.model_validate(item_in, update={"owner_id": current_user.id})
+    item = Job.model_validate(item_in, update={"owner_id": current_user.id})
     session.add(item)
     session.commit()
     session.refresh(item)
     return item
 
 
-@router.put("/{id}", response_model=ItemPublic)
+@router.put("/{id}", response_model=JobPublic)
 def update_item(
     *,
     session: SessionDep,
     current_user: CurrentUser,
     id: uuid.UUID,
-    item_in: ItemUpdate,
+    item_in: JobUpdate,
 ) -> Any:
     """
     Update an item.
     """
-    item = session.get(Item, id)
+    item = session.get(Job, id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     if not current_user.is_superuser and (item.owner_id != current_user.id):
@@ -99,7 +99,7 @@ def delete_item(
     """
     Delete an item.
     """
-    item = session.get(Item, id)
+    item = session.get(Job, id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     if not current_user.is_superuser and (item.owner_id != current_user.id):
