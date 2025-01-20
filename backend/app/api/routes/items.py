@@ -54,20 +54,6 @@ def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> 
     return item
 
 
-@router.post("/", response_model=JobPublic)
-def create_item(
-    *, session: SessionDep, current_user: CurrentUser, item_in: JobCreate
-) -> Any:
-    """
-    Create new item.
-    """
-    item = Job.model_validate(item_in, update={"owner_id": current_user.id})
-    session.add(item)
-    session.commit()
-    session.refresh(item)
-    return item
-
-
 @router.put("/{id}", response_model=JobPublic)
 def update_item(
     *,
