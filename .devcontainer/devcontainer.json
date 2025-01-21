@@ -11,7 +11,7 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or the host.
-	// "forwardPorts": [5000, 5432],
+	"forwardPorts": [2222, 8000, 5173],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "cd backend/ && pipx install uv && uv sync && uv run app/backend_pre_start.py && uv run alembic upgrade head && uv run app/initial_data.py && cd ../frontend && pnpm install",
