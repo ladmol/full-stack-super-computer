@@ -1,65 +1,81 @@
 import os
 import subprocess
+import logging
+
+# Настраиваем логирование
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# Константы
+USERNAME = "edgerunner"
+GROUP = "video"
+HOME_PATH = "/home"
 
 
-def setup_edgerunner():
-    username = "edgerunner"
-    group = "video"
+def user_exists(username):
+    """Проверяет, существует ли пользователь."""
+    result = subprocess.run(["id", username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return result.returncode == 0
 
+
+def create_user(username):
+    """Создает пользователя."""
     try:
-        # Проверяем, существует ли пользователь
-        result = subprocess.run(
-            ["id", username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-        if result.returncode != 0:
-            # Создаем пользователя и домашнюю директорию
-            subprocess.run(["sudo", "useradd", "-s", "/bin/bash", username], check=True)
-            print(f"Пользователь {username} успешно создан.")
-        else:
-            print(f"Пользователь {username} уже существует.")
-
-        # Проверяем, состоит ли пользователь в группе video
-        result = subprocess.run(["groups", username], capture_output=True, text=True)
-        groups = result.stdout
-
-        if group in groups:
-            print(f"Пользователь {username} уже состоит в группе {group}.")
-        else:
-            # Добавляем пользователя в группу video
-            subprocess.run(["sudo", "usermod", "-aG", group, username], check=True)
-            print(f"Пользователь {username} добавлен в группу {group}.")
-
+        subprocess.run(["sudo", "useradd", "-s", "/bin/bash", username], check=True)
+        logging.info(f"Пользователь {username} успешно создан.")
     except subprocess.CalledProcessError as e:
-        print(f"Ошибка при выполнении команды: {e}")
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
+        raise RuntimeError(f"Ошибка при создании пользователя {username}: {e}")
 
 
-def grant_home_permissions():
-    edgerunner = "edgerunner"
-    home_path = "/home"
-
+def user_in_group(username, group):
+    """Проверяет, состоит ли пользователь в указанной группе."""
     try:
-        # Проверяем, существует ли директория /home
-        if not os.path.exists(home_path):
-            print(f"Директория {home_path} не существует.")
+        result = subprocess.run(["groups", username], capture_output=True, text=True, check=True)
+        return group in result.stdout.split()
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Ошибка при проверке группы для {username}: {e}")
+
+
+def add_user_to_group(username, group):
+    """Добавляет пользователя в группу."""
+    try:
+        subprocess.run(["sudo", "usermod", "-aG", group, username], check=True)
+        logging.info(f"Пользователь {username} добавлен в группу {group}.")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Ошибка при добавлении {username} в группу {group}: {e}")
+
+
+def setup_edgerunner(username, group):
+    """Настраивает пользователя edgerunner и добавляет его в группу."""
+    try:
+        if not user_exists(username):
+            create_user(username)
+        else:
+            logging.info(f"Пользователь {username} уже существует.")
+
+        if not user_in_group(username, group):
+            add_user_to_group(username, group)
+        else:
+            logging.info(f"Пользователь {username} уже состоит в группе {group}.")
+    except RuntimeError as e:
+        logging.error(e)
+
+
+def grant_permissions(path, username):
+    """Устанавливает права на папку для пользователя."""
+    try:
+        if not os.path.exists(path):
+            logging.warning(f"Директория {path} не существует.")
             return
 
-        # Даём права edgerunner на папку /home и все папки внутри
-        subprocess.run(["sudo", "chmod", "-R", "u+rwx", home_path], check=True)
-        print(
-            f"Права read/write/execute для {edgerunner} установлены на {home_path} и все вложенные папки."
-        )
-
+        subprocess.run(["sudo", "chmod", "-R", "u+rwx", path], check=True)
+        logging.info(f"Права R/W/X для {username} установлены на {path}.")
     except subprocess.CalledProcessError as e:
-        print(f"Ошибка при выполнении команды: {e}")
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
+        raise RuntimeError(f"Ошибка при установке прав на {path}: {e}")
 
 
 def main():
-    setup_edgerunner()
-    grant_home_permissions()
+    setup_edgerunner(USERNAME, GROUP)
+    grant_permissions(HOME_PATH, USERNAME)
 
 
 if __name__ == "__main__":
