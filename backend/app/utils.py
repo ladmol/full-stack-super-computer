@@ -1,4 +1,6 @@
 import logging
+import subprocess
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -8,8 +10,11 @@ import emails  # type: ignore
 import jwt
 from jinja2 import Template
 from jwt.exceptions import InvalidTokenError
+from sqlmodel import select
 
+from app.api.deps import SessionDep
 from app.core.config import settings
+from app.models import Job
 
 
 @dataclass
@@ -115,3 +120,58 @@ def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+
+
+class JobQueueManager:
+    def __init__(self):
+        self.queue = deque()
+
+    def load_jobs(self, db: SessionDep):
+        """
+        Загружает задачи из базы данных в очередь.
+        """
+        statement = select(Job).where(
+            Job.owner_id.isnot(None)).order_by(Job.id)
+        results = db.exec(statement).all()
+
+        for job in results:
+            self.queue.append(job[0])  # job[0] - объект Job из кортежа
+        print(f"Загружено {len(self.queue)} задач в очередь.")
+
+    def add_job(self, db: SessionDep, job: Job):
+        """
+        Добавляет задачу в базу данных и очередь.
+        """
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+        self.queue.append(job)
+        print(f"Задача {job.title} добавлена в очередь.")
+
+    def get_next_job(self) -> Job | None:
+        """
+        Получает следующую задачу из очереди.
+        """
+        if self.queue:
+            return self.queue.popleft()
+        print("Очередь пуста.")
+        return None
+
+    def process_job(self, job: Job):
+        """
+        Обрабатывает задачу (например, выполнение Python-скрипта).
+        """
+        print(f"Обработка задачи '{job.title}': {job.description}")
+        try:
+            subprocess.run(["python", job.description], check=True)
+            print(f"Задача '{job.title}' успешно выполнена.")
+        except subprocess.CalledProcessError:
+            print(f"Ошибка при выполнении задачи '{job.title}'.")
+
+    def remove_job(self, db: SessionDep, job: Job):
+        """
+        Удаляет задачу из базы данных после выполнения.
+        """
+        db.delete(job)
+        db.commit()
+        print(f"Задача '{job.title}' удалена из очереди.")
