@@ -17,7 +17,8 @@
 	"postCreateCommand": "cd backend/ && pipx install uv && uv sync && uv run app/backend_pre_start.py && uv run alembic upgrade head && uv run app/initial_data.py && cd ../frontend && pnpm install",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/devcontainers/features/sshd:1": {}
+		"ghcr.io/devcontainers/features/sshd:1": {},
+		"ghcr.io/itsmechlark/features/redis-server:1": {}
 	},
 	"customizations": {
 		"vscode": {
