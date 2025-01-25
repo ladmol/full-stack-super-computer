@@ -73,9 +73,25 @@ def grant_permissions(path, username):
         raise RuntimeError(f"Ошибка при установке прав на {path}: {e}")
 
 
+def run_script_in_user_home(username, script_command):
+    """Запускает скрипт в домашней директории пользователя."""
+
+    # Пример: "/home/username"
+    user_home = os.path.join(HOME_PATH, username)
+    # Переходим в домашнюю директорию пользователя и выполняем команду
+    try:
+        subprocess.run(
+            f"sudo -u {username} bash -c 'cd {user_home} && {script_command}'", shell=True, check=True)
+        logging.info(f"Скрипт успешно выполнен в директории {user_home}.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Ошибка при выполнении скрипта: {e}")
+
+
 def main():
     setup_edgerunner(USERNAME, GROUP)
     grant_permissions(HOME_PATH, USERNAME)
+    script_command = "python3 script.py"  # Пример команды для запуска скрипта
+    run_script_in_user_home(USERNAME, script_command)
 
 
 if __name__ == "__main__":
