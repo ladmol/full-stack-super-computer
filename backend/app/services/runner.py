@@ -79,19 +79,15 @@ def grant_permissions(path, username):
         raise RuntimeError(f"Ошибка при установке прав на {path}: {e}")
 
 
-def run_script_in_user_home(username, script_command):
+def run_script_in_user_home(path, script_command):
     """Запускает скрипт в домашней директории пользователя."""
-
-    # Пример: "/home/username"
-    user_home = os.path.join(HOME_PATH, username)
-    # Переходим в домашнюю директорию пользователя и выполняем команду
     try:
         subprocess.run(
-            f"sudo -u {username} bash -c 'cd {user_home} && {script_command}'",
+            f"sudo -u {USERNAME} bash -c 'cd {path} && {script_command}'",
             shell=True,
             check=True,
         )
-        logging.info(f"Скрипт успешно выполнен в директории {user_home}.")
+        logging.info(f"Скрипт успешно выполнен в директории {path}.")
     except subprocess.CalledProcessError as e:
         logging.error(f"Ошибка при выполнении скрипта: {e}")
 
