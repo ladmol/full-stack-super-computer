@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 
-from app.queue_runner import execute_script
+from app.core.celery_config import execute_script
 
 
 def add(folder_name: Annotated[str, typer.Argument()]):
