@@ -1,4 +1,4 @@
-#!../../.venv/bin/python3
+#!/workspaces/full-stack-super-computer/backend/.venv/bin/python3
 from typing import Annotated
 
 import typer
