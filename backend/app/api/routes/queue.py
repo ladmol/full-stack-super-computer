@@ -14,7 +14,7 @@ class ScriptRequest(BaseModel):
 # Paths
 SCRIPTS_DIR = '/home'
 
-@router.post("/stop")
+@router.post("/pause")
 def stop_script():
     redis_client.set("paused", "True")
     return {"message": "Execution paused."}
@@ -25,23 +25,23 @@ def resume_execution():
     redis_client.set("paused", "False")
     return {"message": "Execution resumed."}
 
-@router.post("/queue")
-def queue_script(request: ScriptRequest):
-    folder_name = request.folder_name
-    folder_path = os.path.join(SCRIPTS_DIR, folder_name)
+# @router.post("/queue")
+# def queue_script(request: ScriptRequest):
+#     folder_name = request.folder_name
+#     folder_path = os.path.join(SCRIPTS_DIR, folder_name)
 
-    if not os.path.exists(folder_path):
-        raise HTTPException(status_code=404, detail="Folder does not exist")
+#     if not os.path.exists(folder_path):
+#         raise HTTPException(status_code=404, detail="Folder does not exist")
 
-    print(f"Queuing task for folder: {folder_name}")
-    try:
-        task = execute_script.delay(folder_name)
-        print(f"Task ID: {task.id}")
-    except Exception as e:
-        print(f"Error adding task: {e}")
-        raise HTTPException(status_code=500, detail="Failed to queue task")
+#     print(f"Queuing task for folder: {folder_name}")
+#     try:
+#         task = execute_script.delay(folder_name)
+#         print(f"Task ID: {task.id}")
+#     except Exception as e:
+#         print(f"Error adding task: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to queue task")
 
-    return {"message": f"Folder {folder_name} queued for execution"}
+#     return {"message": f"Folder {folder_name} queued for execution"}
 
 
 @router.post("/skip")
