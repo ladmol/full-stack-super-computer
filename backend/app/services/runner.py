@@ -1,9 +1,11 @@
+import logging
 import os
 import subprocess
-import logging
 
 # Настраиваем логирование
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Константы
 USERNAME = "edgerunner"
@@ -13,7 +15,9 @@ HOME_PATH = "/home"
 
 def user_exists(username):
     """Проверяет, существует ли пользователь."""
-    result = subprocess.run(["id", username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = subprocess.run(
+        ["id", username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
     return result.returncode == 0
 
 
@@ -29,7 +33,9 @@ def create_user(username):
 def user_in_group(username, group):
     """Проверяет, состоит ли пользователь в указанной группе."""
     try:
-        result = subprocess.run(["groups", username], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["groups", username], capture_output=True, text=True, check=True
+        )
         return group in result.stdout.split()
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Ошибка при проверке группы для {username}: {e}")
@@ -81,7 +87,10 @@ def run_script_in_user_home(username, script_command):
     # Переходим в домашнюю директорию пользователя и выполняем команду
     try:
         subprocess.run(
-            f"sudo -u {username} bash -c 'cd {user_home} && {script_command}'", shell=True, check=True)
+            f"sudo -u {username} bash -c 'cd {user_home} && {script_command}'",
+            shell=True,
+            check=True,
+        )
         logging.info(f"Скрипт успешно выполнен в директории {user_home}.")
     except subprocess.CalledProcessError as e:
         logging.error(f"Ошибка при выполнении скрипта: {e}")
