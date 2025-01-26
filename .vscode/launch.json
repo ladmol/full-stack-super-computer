@@ -21,6 +21,20 @@
             "request": "launch",
             "command": "pnpm run dev --host",
             "cwd": "${workspaceFolder}/frontend"
+        },
+        {
+            "name": "Celery",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "celery",
+            "args": [
+                "-A",
+                "app.core.celery_config",
+                "worker",
+                "--loglevel=INFO"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ],
     "compounds": [
@@ -30,6 +44,15 @@
                 "Python Debugger: FastAPI",
                 "Frontend: pnpm run dev"
             ]
+        },
+        {
+            "name": "Start All (Backend, Frontend, Celery)",
+            "configurations": [
+                "Python Debugger: FastAPI",
+                "Frontend: pnpm run dev",
+                "Celery"
+            ],
+            "default": true
         }
     ]
 }
