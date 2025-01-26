@@ -2,9 +2,10 @@ import json
 import os
 
 import psutil
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.api.deps import get_current_active_superuser
 from app.core.celery_config import redis_client
 
 router = APIRouter()
@@ -18,13 +19,13 @@ class ScriptRequest(BaseModel):
 SCRIPTS_DIR = "/home"
 
 
-@router.post("/pause")
+@router.post("/pause", dependencies=[Depends(get_current_active_superuser)])
 def stop_script():
     redis_client.set("paused", "True")
     return {"message": "Execution paused."}
 
 
-@router.post("/resume")
+@router.post("/resume", dependencies=[Depends(get_current_active_superuser)])
 def resume_execution():
     redis_client.set("paused", "False")
     return {"message": "Execution resumed."}
@@ -49,7 +50,7 @@ def resume_execution():
 #     return {"message": f"Folder {folder_name} queued for execution"}
 
 
-@router.post("/skip")
+@router.post("/skip", dependencies=[Depends(get_current_active_superuser)])
 def skip_script():
     try:
         # Получение списка выполняемых скриптов из Redis
