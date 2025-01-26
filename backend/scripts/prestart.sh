@@ -23,3 +23,5 @@ cd ../frontend
 pnpm install
 
 sudo ln -s /workspaces/full-stack-super-computer/backend/app/cli/cmd.py /usr/local/bin/runner
+
+sudo setfacl -R -m u:vscode:rwX /home
