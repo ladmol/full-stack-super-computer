@@ -3,7 +3,7 @@
 set -e
 set -x
 
-cd backend/
+cd ../
 
 pipx install uv
 
