@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 
+from app.services.user_create_folder import create_linux_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
 
@@ -72,6 +73,8 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
             subject=email_data.subject,
             html_content=email_data.html_content,
         )
+    username = user_in.email.split("@")[0]
+    create_linux_user(username, user_in.password)
     return user
 
 
@@ -154,6 +157,8 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
         )
     user_create = UserCreate.model_validate(user_in)
     user = crud.create_user(session=session, user_create=user_create)
+    username = user_create.email.split("@")[0]
+    create_linux_user(username, user_create.password)
     return user
 
 
