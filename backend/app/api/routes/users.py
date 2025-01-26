@@ -1,7 +1,6 @@
 import uuid
 from typing import Any
 
-from app.services.user_create_folder import create_linux_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
 
@@ -25,6 +24,7 @@ from app.models import (
     UserUpdate,
     UserUpdateMe,
 )
+from app.services.user_create_folder import create_linux_user
 from app.utils import generate_new_account_email, send_email
 
 router = APIRouter()

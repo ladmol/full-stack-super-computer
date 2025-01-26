@@ -1,9 +1,11 @@
+import logging
 import os
 import subprocess
-import logging
 
 # Настраиваем логирование
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Константы
 USERNAME = "edgerunner"
@@ -13,7 +15,9 @@ HOME_PATH = "/home"
 
 def user_exists(username):
     """Проверяет, существует ли пользователь."""
-    result = subprocess.run(["id", username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = subprocess.run(
+        ["id", username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
     return result.returncode == 0
 
 
@@ -29,7 +33,9 @@ def create_user(username):
 def user_in_group(username, group):
     """Проверяет, состоит ли пользователь в указанной группе."""
     try:
-        result = subprocess.run(["groups", username], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["groups", username], capture_output=True, text=True, check=True
+        )
         return group in result.stdout.split()
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Ошибка при проверке группы для {username}: {e}")
