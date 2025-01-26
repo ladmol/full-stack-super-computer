@@ -3,11 +3,23 @@
 set -e
 set -x
 
+cd ../
+
+pipx install uv
+
+uv sync
+
 # Let the DB start
-python app/backend_pre_start.py
+uv run app/backend_pre_start.py
 
 # Run migrations
-alembic upgrade head
+uv run alembic upgrade head
 
 # Create initial data in DB
-python app/initial_data.py
+uv run app/initial_data.py
+
+cd ../frontend
+
+pnpm install
+
+sudo ln -s /workspaces/full-stack-super-computer/backend/app/cli/cmd.py /usr/local/bin/runner
