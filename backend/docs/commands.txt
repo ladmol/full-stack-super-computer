@@ -1,6 +1,6 @@
 uv run celery -A queue_runner.celery worker --loglevel=info
 
-sudo setfacl -R -m u:vscode:rwX /home
+sudo setfacl -d -R -m u:vscode:rwX /home
 chmod +x /workspaces/full-stack-super-computer/backend/app/cli/cmd.py
 sudo ln -s /workspaces/full-stack-super-computer/backend/app/cli/cmd.py /usr/local/bin/aboba
 uv run celery -A celery_config worker --loglevel=INFO
