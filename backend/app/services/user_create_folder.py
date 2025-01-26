@@ -48,7 +48,7 @@ def setup_home_directory(username):
         raise RuntimeError(f"Ошибка при настройке директории {home_dir}: {e}")
 
 
-def create_user(username, password):
+def create_linux_user(username, password):
     """
     Главная функция для создания пользователя.
     """
@@ -69,7 +69,7 @@ def create_user(username, password):
 
 
 def main():
-    create_user("testuser", "testpassword")
+    create_linux_user("testuser", "testpassword")
 
 
 if __name__ == "__main__":
