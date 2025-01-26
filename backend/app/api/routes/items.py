@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Job, JobCreate, JobPublic, JobsPublic, JobUpdate, Message
+from app.models import Job, JobPublic, JobsPublic, JobUpdate, Message
 
 router = APIRouter()
 
@@ -25,16 +25,11 @@ def read_items(
         items = session.exec(statement).all()
     else:
         count_statement = (
-            select(func.count())
-            .select_from(Job)
-            .where(Job.owner_id == current_user.id)
+            select(func.count()).select_from(Job).where(Job.owner_id == current_user.id)
         )
         count = session.exec(count_statement).one()
         statement = (
-            select(Job)
-            .where(Job.owner_id == current_user.id)
-            .offset(skip)
-            .limit(limit)
+            select(Job).where(Job.owner_id == current_user.id).offset(skip).limit(limit)
         )
         items = session.exec(statement).all()
 
