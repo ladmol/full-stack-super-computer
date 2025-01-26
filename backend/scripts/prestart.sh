@@ -24,4 +24,4 @@ pnpm install
 
 sudo ln -s /workspaces/full-stack-super-computer/backend/app/cli/cmd.py /usr/local/bin/runner
 
-sudo setfacl -d -R -m u:vscode:rwX /home
+sudo setfacl -R -m u:vscode:rwX -m mask::rwx -d -m u:vscode:rwX /home
